@@ -15,6 +15,8 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
 
  /**
  * Clase que representa el Main. 
@@ -50,6 +52,19 @@ public class Main{
      */
     private final static String CONFIG_TAM_ESCENARIO = "./config/escenario.txt";
 
+    /**
+     * Indica el reporte final del programa 
+     * @return Reporte del programa.
+     */
+    public static String toString(String numMarcos, String numPaginas, String sec, int numFallos){
+        String msg = "\n\n-------------------- REPORTE --------------------" +
+        "\n\nNúmero de marcos de página: " + numMarcos +
+        "\n\nNúmero de páginas: " + numPaginas +
+        "\n\nSecuencia de referencias: " + sec +
+        "\n\nNúmero de fallo de páginas: " + numFallos;
+        return msg;
+    }
+
     /* ****************************************************************
 	 * 			Main
 	 *****************************************************************/
@@ -62,7 +77,7 @@ public class Main{
      */
     public static void main(String[] args) throws FileNotFoundException, IOException {
         String secReferencias = "";
-        FileReader f = new FileReader(CONFIG_TAM_16);
+        FileReader f = new FileReader(CONFIG_TAM_128);
         BufferedReader b = new BufferedReader(f);
 
         // Número de marcos de página en memoria RAM que el sistema le asigna al proceso 
@@ -83,12 +98,25 @@ public class Main{
         // Creación de tabla de marcos de página 
         TablaMarcosPagina tablaMarcosPagina = new TablaMarcosPagina(Integer.parseInt(numMarcosPagina));
     
+        // Indica el fin de la ejecución del programa.
+        CyclicBarrier exit = new CyclicBarrier(2);
+
         // Creación de Thread de actualización 
-        ThreadActualizar threadActualizar = new ThreadActualizar(tablaEstadosPaginas, tablaMarcosPagina, Integer.parseInt(numReferenciasArchivos), secReferencias);
+        ThreadActualizar threadActualizar = new ThreadActualizar(tablaEstadosPaginas, tablaMarcosPagina, Integer.parseInt(numReferenciasArchivos), secReferencias, exit);
         threadActualizar.start();
 
         // Creación de Thread de ejecución de algoritmo de reemplazo  
         ThreadAlgoritmo threadAlgoritmo = new ThreadAlgoritmo(tablaEstadosPaginas, tablaMarcosPagina, threadActualizar);
         threadAlgoritmo.start();
+
+        try {
+            exit.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (BrokenBarrierException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println( toString(numMarcosPagina, numPaginas, secReferencias, threadActualizar.darFalloPaginas()) );
     }
 }

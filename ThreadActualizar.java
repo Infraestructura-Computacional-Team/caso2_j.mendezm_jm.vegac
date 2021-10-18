@@ -1,3 +1,6 @@
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
+
 /**~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  * Universidad	de	los	Andes	(Bogotá	- Colombia)
  * Departamento	de	Ingeniería	de	Sistemas	y	Computación
@@ -47,6 +50,11 @@ public class ThreadActualizar extends Thread {
      */
     private int numSecReferenciasRestantes;
 
+    /**
+     * Barrera del fin de la ejecución.
+     */
+    private CyclicBarrier exit;   
+
     /* ****************************************************************
 	 * 			Contructor
 	 *****************************************************************/
@@ -60,12 +68,14 @@ public class ThreadActualizar extends Thread {
      * @param numReferencias      Número de referencias en el archivo.
      * @param secReferencias      Secuencia de referencias (a páginas del proceso).
      */
-    public ThreadActualizar(TablaEstadosPaginas tablaEstadosPaginas, TablaMarcosPagina tablaMarcosPagina, int numReferencias, String secReferencias) {
+    public ThreadActualizar(TablaEstadosPaginas tablaEstadosPaginas, TablaMarcosPagina tablaMarcosPagina, int numReferencias, String secReferencias, CyclicBarrier exit) {
         this.numSecReferenciasRestantes = numReferencias; 
         this.tablaEstadosPaginas = tablaEstadosPaginas;
         this.tablaMarcosPagina = tablaMarcosPagina;
         this.secReferencias = secReferencias;
         this.pagesFault = 0;
+        this.exit = exit; 
+        
     }
 
     /* ****************************************************************
@@ -73,12 +83,19 @@ public class ThreadActualizar extends Thread {
 	 *****************************************************************/
     
     /**
+     * Se encarga de dar el npumero de fallo de páginas. 
+     */
+    public int darFalloPaginas(){
+        return pagesFault;
+    }
+
+     /**
      * Se encarga de retornar el número de referencias restantes
      */
     public int getNumReferenciasRestantes(){
         return numSecReferenciasRestantes;
     }
-    
+
     @Override
     public void run() {
         String[] secs = secReferencias.split(" ");
@@ -130,6 +147,13 @@ public class ThreadActualizar extends Thread {
             }
             numSecReferenciasRestantes--;
         }
-        System.out.println("Número de falla de páginas: " + pagesFault);
+
+        try {
+            exit.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (BrokenBarrierException e) {
+            e.printStackTrace();
+        }
     }
 }
