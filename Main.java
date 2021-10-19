@@ -48,9 +48,17 @@ public class Main{
     private final static String CONFIG_TAM_128 = "./config/referencias8_128_75.txt";
 
     /**
-     * Ruta de archivo de configuración de tamaño de página 128
+     * Ruta de archivo de configuración de tamaño de página 32
      */
-    private final static String CONFIG_TAM_ESCENARIO = "./config/escenario.txt";
+    private final static String CONFIG_TAM_ESCENARIO1 = "./config/TestReferencias16_32.txt";
+
+
+    /**
+     * Ruta de archivo de configuración de tamaño de página 64
+     */
+    private final static String CONFIG_TAM_ESCENARIO2 = "./config/TestReferencias32_64.txt";
+
+
 
     /**
      * Indica el reporte final del programa 
@@ -77,7 +85,7 @@ public class Main{
      */
     public static void main(String[] args) throws FileNotFoundException, IOException {
         String secReferencias = "";
-        FileReader f = new FileReader(CONFIG_TAM_128);
+        FileReader f = new FileReader(CONFIG_TAM_ESCENARIO2);
         BufferedReader b = new BufferedReader(f);
 
         // Número de marcos de página en memoria RAM que el sistema le asigna al proceso 
